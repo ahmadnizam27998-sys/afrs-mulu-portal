@@ -504,7 +504,7 @@
 
       <div class="portal-nav-menu">
         <button class="portal-nav-btn active" type="button" onclick="portalNavigate('dashboard', this)"><span>▦</span> Dashboard</button>
-        <button class="portal-nav-btn" type="button" onclick="portalNavigate('airport-search', this)"><span>⌕</span> Airport Search</button>
+        <button class="portal-nav-btn" type="button" onclick="portalNavigate('airport-search', this)"><span>⌕</span> Carian Portal</button>
         <button class="portal-nav-btn" type="button" onclick="portalNavigate('documents', this)"><span>▤</span> Documents</button>
       </div>
     </nav>
@@ -515,57 +515,57 @@
       <!-- DASHBOARD STATS -->
       <div class="stats-grid animate-entrance">
         <div class="stat-card glass-card">
-          <div class="stat-label">TOTAL DOCUMENT</div>
+          <div class="stat-label">JUMLAH DOKUMEN</div>
           <div class="stat-value" id="totalDocs">0</div>
-          <div class="stat-note">FILES IN SUPABASE STORAGE</div>
+          <div class="stat-note">FAIL DI SUPABASE STORAGE</div>
         </div>
 
         <div class="stat-card glass-card">
-          <div class="stat-label">SYSTEM STATUS</div>
+          <div class="stat-label">STATUS SISTEM</div>
           <div class="stat-value" id="systemStatus" style="font-size:20px; color:var(--accent-gold);">ONLINE</div>
-          <div class="stat-note">CONNECTED TO SUPABASE</div>
+          <div class="stat-note">TERHUBUNG KE SUPABASE</div>
         </div>
       </div>
 
-      <!-- DOCUMENT MANAGEMENT SECTION -->
-      <div class="glass-card animate-entrance" id="documents">
-        <h3 style="margin-bottom:14px; font-size:16px;">Document Management (Supabase Storage)</h3>
-        
-        <div style="background:rgba(2,44,34,0.3); padding:14px; border-radius:12px; border:1px solid var(--glass-border); margin-bottom: 12px;">
-          <h4 style="font-size:13px; margin-bottom:10px; color:var(--accent-gold);">Document List</h4>
-          <select id="docs" size="6" aria-label="Select document" style="margin-bottom:12px;"></select>
-          <button type="button" onclick="openSelectedDocument()" style="width:100%;">📄 Open / Download File</button>
-        </div>
-
-        <div style="display:flex; gap:10px;">
-          <button onclick="loadDocs()" style="flex:1;">Refresh Storage Files</button>
-        </div>
-        <div id="status" style="margin-top:10px; font-size:12px; color:var(--accent-gold);"></div>
-      </div>
-
-      <!-- AIRPORT SEARCH SECTION -->
+      <!-- CARIAN INTEGRASI (AIRPORT & DOKUMEN) -->
       <section id="airport-search" class="glass-card animate-entrance">
-        <h3 style="margin-bottom:6px; font-size:16px;">Airport Search (PostgreSQL Database)</h3>
-        <p style="color:var(--text-muted); font-size:12px; margin-bottom:14px;">Search airport information directly from Supabase Database.</p>
+        <h3 style="margin-bottom:6px; font-size:16px;">Carian Portal (Database & Dokumen)</h3>
+        <p style="color:var(--text-muted); font-size:12px; margin-bottom:14px;">Cari fail dokumen atau maklumat lapangan terbang secara serentak.</p>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
-          <input type="text" id="airportSearchInput" placeholder="Search airport name, IATA, ICAO..." style="flex:1;">
-          <button type="button" onclick="runAirportSearch()">Search Database</button>
+          <input type="text" id="airportSearchInput" placeholder="Taip nama fail, tajuk dokumen, nama lapangan terbang..." onkeyup="if(event.key==='Enter') runAirportSearch()" style="flex:1;">
+          <button type="button" onclick="runAirportSearch()">Cari Sekarang</button>
         </div>
 
         <div id="airportSearchStatus" style="margin-bottom:12px; color:var(--text-muted); font-size:12px;">
-          Enter keyword to query database.
+          Masukkan kata kunci untuk mula membuat carian.
         </div>
 
         <div id="airportSearchResults"></div>
       </section>
+
+      <!-- DOCUMENT MANAGEMENT SECTION -->
+      <div class="glass-card animate-entrance" id="documents">
+        <h3 style="margin-bottom:14px; font-size:16px;">Pengurusan Dokumen (Supabase Storage)</h3>
+        
+        <div style="background:rgba(2,44,34,0.3); padding:14px; border-radius:12px; border:1px solid var(--glass-border); margin-bottom: 12px;">
+          <h4 style="font-size:13px; margin-bottom:10px; color:var(--accent-gold);">Senarai Dokumen Terkini</h4>
+          <select id="docs" size="6" aria-label="Select document" style="margin-bottom:12px;"></select>
+          <button type="button" onclick="openSelectedDocument()" style="width:100%;">📄 Buka / Muat Turun Fail</button>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button onclick="loadDocs()" style="flex:1;">Refresh Senarai Fail</button>
+        </div>
+        <div id="status" style="margin-top:10px; font-size:12px; color:var(--accent-gold);"></div>
+      </div>
 
     </main>
   </div>
 
   <script>
     // =========================================================
-    // 1. SUPABASE API CONFIGURATION (DITETAPKAN SECARA AUTOMATIK)
+    // 1. SUPABASE API CONFIGURATION
     // =========================================================
     const SUPABASE_URL = 'https://kfatqszqbvocybgdqtps.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmYXRxc3pxYnZvY3liZ2RxdHBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0MjIwNzQsImV4cCI6MjEwODk5ODA3NH0.EPBWQ_j6qkUsonY0IgaPhIgAi5FslNf5MlmD0lMBjDI';
@@ -615,6 +615,7 @@
 
     function initPortalData() {
       loadDocs();
+      runAirportSearch();
     }
 
     // =========================================================
@@ -661,7 +662,7 @@
     }
 
     // =========================================================
-    // 4. DATABASE SEARCH LOGIC (POSTGRESQL TABLE 'airports')
+    // 4. CARIAN INTEGRATED LOGIC (SEARCH AIRPORTS & DOCUMENTS)
     // =========================================================
     async function runAirportSearch() {
       const input = document.getElementById('airportSearchInput');
@@ -669,38 +670,75 @@
       const resultsBox = document.getElementById('airportSearchResults');
       const keyword = input.value.trim();
 
-      status.textContent = "Searching Supabase database...";
+      status.textContent = "Sedang membuat carian dalam pangkalan data Supabase...";
       resultsBox.innerHTML = "";
 
+      // 1. CARI DATA LAPANGAN TERBANG (AIRPORTS TABLE)
       let query = db.from('airports').select('*');
-
       if (keyword) {
         query = query.or(`airport_name.ilike.%${keyword}%,iata_code.ilike.%${keyword}%,icao_code.ilike.%${keyword}%,country.ilike.%${keyword}%`);
       }
+      const { data: airports, error: dbError } = await query;
 
-      const { data: airports, error } = await query;
+      // 2. CARI FAIL DOKUMEN (STORAGE BUCKET 'DOCUMENTS')
+      const { data: files, error: storageError } = await db.storage.from('documents').list();
+      
+      let matchedFiles = [];
+      if (files) {
+        matchedFiles = files.filter(file => 
+          file.name !== '.emptyFolderPlaceholder' && 
+          (keyword === '' || file.name.toLowerCase().includes(keyword.toLowerCase()))
+        );
+      }
 
-      if (error) {
-        status.textContent = "Gagal membuat carian: " + error.message;
+      if (dbError) {
+        status.textContent = "Ralat pangkalan data: " + dbError.message + " (Sila pastikan RLS Policy dibenarkan)";
         return;
       }
 
-      status.textContent = (airports ? airports.length : 0) + " rekod lapangan terbang ditemui.";
+      const totalFound = (airports ? airports.length : 0) + matchedFiles.length;
+      status.textContent = `${totalFound} keputusan ditemui untuk "${keyword || 'Semua Rekod'}".`;
 
-      if (!airports || airports.length === 0) {
-        resultsBox.textContent = "Tiada rekod padan ditemui.";
-        return;
+      let htmlOutput = "";
+
+      // BAHAGIAN 1: PAPARAN DOKUMEN YANG DICARI
+      if (matchedFiles.length > 0) {
+        htmlOutput += `<h4 style="color:var(--accent-gold); margin: 16px 0 8px;">📄 Dokumen Ditemui (${matchedFiles.length})</h4>`;
+        matchedFiles.forEach(file => {
+          const { data } = db.storage.from('documents').getPublicUrl(file.name);
+          htmlOutput += `
+            <div style="margin-bottom:8px; padding:12px; border:1px solid var(--glass-border); border-radius:10px; background:rgba(2,44,34,0.4); display:flex; justify-content:space-between; align-items:center;" class="animate-entrance">
+              <div>
+                <strong style="color:#ffffff;">${file.name}</strong>
+                <small style="display:block; color:var(--text-muted);">${file.metadata?.size ? Math.round(file.metadata.size/1024) + ' KB' : 'File'}</small>
+              </div>
+              <a href="${data.publicUrl}" target="_blank" style="padding:6px 14px; background:var(--accent-emerald); color:#022c22; text-decoration:none; border-radius:8px; font-weight:700; font-size:12px;">Buka Fail</a>
+            </div>
+          `;
+        });
       }
 
-      resultsBox.innerHTML = airports.map(airport => `
-        <div style="margin-bottom:12px; padding:16px; border:1px solid var(--glass-border); border-radius:12px; background:rgba(6,78,59,0.2);" class="animate-entrance">
-          <h4 style="margin:0 0 10px; color:var(--accent-gold);">${airport.airport_name || 'Unnamed Airport'}</h4>
-          <p style="margin:4px 0; font-size:12px; color:var(--text-muted);"><strong style="color:var(--text-main);">IATA / ICAO:</strong> ${airport.iata_code || '-'} / ${airport.icao_code || '-'}</p>
-          <p style="margin:4px 0; font-size:12px; color:var(--text-muted);"><strong style="color:var(--text-main);">Country:</strong> ${airport.country || '-'}</p>
-          <p style="margin:4px 0; font-size:12px; color:var(--text-muted);"><strong style="color:var(--text-main);">Runway Length:</strong> ${airport.runway_length_m || '-'} m</p>
-          <p style="margin:4px 0; font-size:12px; color:var(--text-muted);"><strong style="color:var(--text-main);">ARFF Category:</strong> ${airport.arff_category || '-'}</p>
-        </div>
-      `).join('');
+      // BAHAGIAN 2: PAPARAN LAPANGAN TERBANG YANG DICARI
+      if (airports && airports.length > 0) {
+        htmlOutput += `<h4 style="color:var(--accent-gold); margin: 16px 0 8px;">✈ Rekod Lapangan Terbang (${airports.length})</h4>`;
+        airports.forEach(airport => {
+          htmlOutput += `
+            <div style="margin-bottom:12px; padding:16px; border:1px solid var(--glass-border); border-radius:12px; background:rgba(6,78,59,0.2);" class="animate-entrance">
+              <h4 style="margin:0 0 10px; color:var(--accent-gold);">${airport.airport_name || 'Unnamed Airport'}</h4>
+              <p style="margin:4px 0; font-size:12px; color:var(--text-muted);"><strong style="color:var(--text-main);">IATA / ICAO:</strong> ${airport.iata_code || '-'} / ${airport.icao_code || '-'}</p>
+              <p style="margin:4px 0; font-size:12px; color:var(--text-muted);"><strong style="color:var(--text-main);">Country:</strong> ${airport.country || '-'}</p>
+              <p style="margin:4px 0; font-size:12px; color:var(--text-muted);"><strong style="color:var(--text-main);">Runway Length:</strong> ${airport.runway_length_m || '-'} m</p>
+              <p style="margin:4px 0; font-size:12px; color:var(--text-muted);"><strong style="color:var(--text-main);">ARFF Category:</strong> ${airport.arff_category || '-'}</p>
+            </div>
+          `;
+        });
+      }
+
+      if (totalFound === 0) {
+        htmlOutput = "<p style='color:var(--text-muted); margin-top:10px;'>Tiada rekod lapangan terbang atau fail dokumen yang padan ditemui.</p>";
+      }
+
+      resultsBox.innerHTML = htmlOutput;
     }
 
     function portalNavigate(section, button) {
