@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AFRS MULU - Smart Work Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Supabase JavaScript SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    /* =========================================================
+       GLASSMORPHISM EMERALD GOLD DESIGN SYSTEM
+       ========================================================= */
+    :root {
+      --bg-gradient: linear-gradient(135deg, #022c22 0%, #064e3b 50%, #022c22 100%);
+      --glass-bg: rgba(6, 78, 59, 0.22);
+      --glass-bg-hover: rgba(6, 78, 59, 0.38);
+      --glass-border: rgba(251, 191, 36, 0.25);
+      --glass-border-light: rgba(251, 191, 36, 0.5);
+      --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+      --glass-blur: blur(16px) saturate(180%);
+      
+      --text-main: #fef3c7;
+      --text-muted: #a7f3d0;
+      --accent-gold: #fbbf24;
+      --accent-gold-light: #fde047;
+      --accent-emerald: #34d399;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      color-scheme: dark;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-main);
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+      min-height: 100vh;
+      padding: 24px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Dynamic Glowing Orbs Background */
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.5;
+      animation: floatOrbs 12s infinite alternate ease-in-out;
+    }
+    body::before {
+      top: 5%;
+      left: 10%;
+      width: 380px;
+      height: 380px;
+      background: rgba(251, 191, 36, 0.2);
+    }
+    body::after {
+      bottom: 10%;
+      right: 10%;
+      width: 480px;
+      height: 480px;
+      background: rgba(52, 211, 153, 0.2);
+      animation-delay: -6s;
+    }
+
+    @keyframes floatOrbs {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(40px, 50px) scale(1.15); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-entrance {
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* =========================================================
+       LOGIN OVERLAY SCREEN (GLASSMORPHISM)
+       ========================================================= */
+    #loginOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(1, 20, 15, 0.85);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    #loginOverlay.hidden-login {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(6, 78, 59, 0.35);
+      border: 1px solid var(--glass-border-light);
+      border-radius: 24px;
+      padding: 36px 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      text-align: center;
+    }
+
+    .login-card h2 {
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+
+    .login-card p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .login-field {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .login-field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-gold);
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .login-field input {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(2, 44, 34, 0.8);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .login-field input:focus {
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      border-radius: 12px;
+      background: linear-gradient(135deg, #fbbf24, #34d399);
+      color: #022c22;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4);
+      color: #000000;
+    }
+
+    #loginErrorMsg {
+      margin-top: 14px;
+      font-size: 12px;
+      color: #f87171;
+      min-height: 18px;
+    }
+
+    /* =========================================================
+       GLASS COMPONENTS & LAYOUT
+       ========================================================= */
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      box-shadow: var(--glass-shadow);
+      padding: 24px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glass-card:hover {
+      border-color: var(--glass-border-light);
+      box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.55);
+    }
+
+    .app-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 24px;
+    }
+
+    /* =========================================================
+       HEADER & BANNER EMERGENCY ANIMATION
+       ========================================================= */
+    .app-header {
+      grid-column: 1 / -1;
+      overflow: hidden;
+      padding: 0;
+    }
+
+    .brand-area {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 28px;
+      background: rgba(2, 44, 34, 0.4);
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .brand-text h2 {
+      font-size: 20px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .logout-btn {
+      padding: 6px 14px !important;
+      font-size: 11px !important;
+      background: rgba(239, 68, 68, 0.2) !important;
+      border: 1px solid rgba(239, 68, 68, 0.4) !important;
+      color: #fca5a5 !important;
+      border-radius: 8px !important;
+      cursor: pointer;
+    }
+
+    .airport-banner {
+      position: relative;
+      padding: 40px 28px;
+      min-height: 230px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      background: linear-gradient(180deg, #01140f 0%, #064e3b 85%, #022c22 100%) !important;
+    }
+
+    .animated-emergency-container {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 1; pointer-events: none;
+    }
+
+    .runway-line {
+      position: absolute;
+      bottom: 15px; left: 0; width: 100%; height: 3px;
+      background: repeating-linear-gradient(90deg, rgba(251, 191, 36, 0.85) 0, rgba(251, 191, 36, 0.85) 30px, transparent 30px, transparent 60px);
+      animation: runwayDash 0.8s linear infinite;
+    }
+
+    @keyframes runwayDash {
+      from { transform: translateX(0); }
+      to { transform: translateX(-60px); }
+    }
+
+    .burning-plane-wrapper {
+      position: absolute;
+      width: 220px; height: 80px; z-index: 2;
+      animation: planeLanding 10s cubic-bezier(0.25, 0.8, 0.25, 1) infinite;
+    }
+
+    @keyframes planeLanding {
+      0% { right: -250px; bottom: 130px; transform: rotate(8deg) scale(0.85); opacity: 0; }
+      10% { opacity: 1; }
+      35% { right: 30%; bottom: 18px; transform: rotate(0deg) scale(1); }
+      85% { right: 80%; bottom: 18px; transform: rotate(0deg) scale(1); opacity: 1; }
+      100% { right: 115%; bottom: 18px; transform: rotate(0deg) scale(1); opacity: 0; }
+    }
+
+    .fire-particle {
+      position: absolute; top: 15px; right: 35px; width: 28px; height: 28px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fde047 0%, #ef4444 65%, transparent 100%);
+      box-shadow: 0 0 15px #ef4444, 0 0 25px #f97316;
+      animation: flameWiggle 0.15s infinite alternate ease-in-out;
+    }
+
+    .smoke-particle {
+      position: absolute; top: 5px; right: 50px; width: 40px; height: 40px;
+      border-radius: 50%; background: rgba(71, 85, 105, 0.75); filter: blur(6px);
+      animation: smokeExpand 0.5s infinite ease-out;
+    }
+
+    @keyframes flameWiggle {
+      0% { transform: scale(0.9) translate(0, 0); }
+      100% { transform: scale(1.35) translate(4px, -3px); }
+    }
+
+    @keyframes smokeExpand {
+      0% { transform: scale(0.6) translate(0, 0); opacity: 0.8; }
+      100% { transform: scale(2.2) translate(35px, -25px); opacity: 0; }
+    }
+
+    .afrs-chaser-wrapper {
+      position: absolute; width: 170px; height: 65px; z-index: 3;
+      animation: afrsChaser 10s cubic-bezier(0.25, 0.8, 0.25, 1) infinite;
+    }
+
+    @keyframes afrsChaser {
+      0% { right: -380px; bottom: 15px; opacity: 0; }
+      15% { opacity: 1; }
+      85% { right: 60%; bottom: 15px; opacity: 1; }
+      100% { right: 110%; bottom: 15px; opacity: 0; }
+    }
+
+    .beacon-red-blue {
+      position: absolute; top: 1px; left: 58px; width: 22px; height: 8px; border-radius: 4px;
+      animation: beaconFlash 0.2s infinite alternate;
+    }
+
+    @keyframes beaconFlash {
+      0% { background: #ef4444; box-shadow: 0 0 20px 8px #ef4444; }
+      100% { background: #3b82f6; box-shadow: 0 0 20px 8px #3b82f6; }
+    }
+
+    .banner-overlay { position: relative; z-index: 4; }
+    .banner-overlay h1 { font-size: 32px; font-weight: 800; color: #ffffff; }
+    .banner-overlay p { color: var(--text-muted); font-size: 14px; margin-bottom: 12px; }
+    .banner-overlay span {
+      display: inline-block; padding: 4px 12px; background: rgba(251, 191, 36, 0.15);
+      border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 20px;
+      font-size: 11px; font-weight: 700; color: var(--accent-gold);
+    }
+
+    /* SIDEBAR NAVIGATION */
+    .portal-nav { display: flex; flex-direction: column; gap: 16px; height: fit-content; position: sticky; top: 24px; }
+    .portal-nav-title { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--glass-border); }
+    .portal-nav-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(251, 191, 36, 0.2); border: 1px solid rgba(251, 191, 36, 0.4); display: flex; align-items: center; justify-content: center; color: var(--accent-gold); }
+    .portal-nav-menu { display: flex; flex-direction: column; gap: 8px; }
+    .portal-nav-btn { display: flex; align-items: center; gap: 12px; padding: 12px 16px; width: 100%; border: 1px solid transparent; border-radius: 12px; background: rgba(6, 78, 59, 0.2); color: var(--text-muted); font-size: 13px; font-weight: 600; cursor: pointer; text-align: left; }
+    .portal-nav-btn:hover { background: var(--glass-bg-hover); color: var(--text-main); border-color: var(--glass-border); }
+    .portal-nav-btn.active { background: rgba(251, 191, 36, 0.18); border-color: rgba(251, 191, 36, 0.5); color: #ffffff; }
+
+    /* MAIN CONTENT AREA */
+    .main-content { display: flex; flex-direction: column; gap: 24px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .stat-card { background: rgba(6, 78, 59, 0.2); position: relative; overflow: hidden; }
+    .stat-card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, var(--accent-gold), var(--accent-emerald)); }
+    .stat-label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 800; color: #ffffff; }
+    .stat-note { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    input[type="text"], input[type="password"], select {
+      width: 100%; padding: 12px 16px; background: rgba(2, 44, 34, 0.65);
+      border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-main);
+      font-size: 13px; outline: none;
+    }
+
+    button:not(.portal-nav-btn):not(.logout-btn) {
+      padding: 12px 20px; border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px;
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.85), rgba(52, 211, 153, 0.85));
+      color: #022c22; font-size: 13px; font-weight: 800; cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+      .app-container { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- SKRIN LOGIN OVERLAY -->
+  <div id="loginOverlay">
+    <div class="login-card animate-entrance">
+      <h2>AFRS MULU PORTAL</h2>
+      <p>Sila masukkan kelayakan akses anda (Supabase Auth)</p>
+
+      <div class="login-field">
+        <label for="loginEmail">EMAIL</label>
+        <input type="text" id="loginEmail" placeholder="user@example.com" autocomplete="off">
+      </div>
+
+      <div class="login-field">
+        <label for="loginPass">PASSWORD</label>
+        <input type="password" id="loginPass" placeholder="Masukkan password" onkeyup="if(event.key==='Enter') processLogin()">
+      </div>
+
+      <button type="button" class="login-btn" onclick="processLogin()">LOG MASUK</button>
+      <div id="loginErrorMsg"></div>
+    </div>
+  </div>
+
+  <!-- MAIN APP CONTAINER -->
+  <div class="app-container">
+
+    <!-- HEADER -->
+    <header class="app-header glass-card animate-entrance">
+      <div class="brand-area">
+        <div class="brand-left">
+          <div class="brand-text">
+            <h2>AFRS MULU - Standalone Portal</h2>
+            <p>Powered by Supabase & Vercel</p>
+          </div>
+        </div>
+        <button type="button" class="logout-btn" onclick="processLogout()">🔒 Log Keluar</button>
+      </div>
+
+      <!-- BANNER DENGAN ANIMASI SVG PESAWAT & BOMBA -->
+      <div class="airport-banner">
+        <div class="animated-emergency-container">
+          <div class="runway-line"></div>
+          
+          <div class="burning-plane-wrapper">
+            <div class="smoke-particle"></div>
+            <div class="fire-particle"></div>
+            <svg viewBox="0 0 300 90" fill="none" style="width:100%; height:auto;">
+              <path d="M10 45 C10 32, 35 28, 90 28 L230 28 C265 28, 285 35, 292 45 C285 55, 265 60, 230 60 L90 60 C35 60, 10 58, 10 45 Z" fill="#e2e8f0"/>
+              <path d="M22 41 C24 37, 32 36, 38 36 L40 43 L22 43 Z" fill="#0f172a"/>
+              <g fill="#0284c7">
+                <circle cx="65" cy="42" r="2.5"/><circle cx="78" cy="42" r="2.5"/>
+                <circle cx="91" cy="42" r="2.5"/><circle cx="104" cy="42" r="2.5"/>
+              </g>
+              <path d="M215 28 L265 5 L285 5 L255 28 Z" fill="#0284c7"/>
+              <path d="M120 48 L170 78 L200 78 L160 48 Z" fill="#cbd5e1"/>
+              <rect x="140" y="62" width="28" height="12" rx="6" fill="#475569"/>
+            </svg>
+          </div>
+
+          <div class="afrs-chaser-wrapper">
+            <div class="beacon-red-blue"></div>
+            <svg viewBox="0 0 240 90" fill="none" style="width:100%; height:auto;">
+              <rect x="20" y="25" width="185" height="45" rx="8" fill="#a3e635"/>
+              <path d="M165 25L195 25L205 45L205 70L165 70Z" fill="#84cc16"/>
+              <rect x="20" y="46" width="185" height="10" fill="#0284c7"/>
+              <circle cx="50" cy="70" r="12" fill="#1e293b" stroke="#a3e635" stroke-width="3"/>
+              <circle cx="85" cy="70" r="12" fill="#1e293b" stroke="#a3e635" stroke-width="3"/>
+              <circle cx="170" cy="70" r="12" fill="#1e293b" stroke="#a3e635" stroke-width="3"/>
+            </svg>
+          </div>
+
+        </div>
+
+        <div class="banner-overlay">
+          <h1>MULU AIRPORT</h1>
+          <p>Airport Fire and Rescue Services</p>
+          <span>SUPABASE DATABASE & STORAGE SYSTEM</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <nav class="portal-nav glass-card animate-entrance">
+      <div class="portal-nav-title">
+        <span class="portal-nav-icon">✈</span>
+        <div>
+          <strong>SMART WORK PORTAL</strong>
+          <small style="display:block; color:var(--text-muted); font-size:11px;">Standalone System</small>
+        </div>
+      </div>
+
+      <div class="portal-nav-menu">
+        <button class="portal-nav-btn active" type="button" onclick="portalNavigate('dashboard', this)"><span>▦</span> Dashboard</button>
+        <button class="portal-nav-btn" type="button" onclick="portalNavigate('airport-search', this)"><span>⌕</span> Airport Search</button>
+        <button class="portal-nav-btn" type="button" onclick="portalNavigate('documents', this)"><span>▤</span> Documents</button>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+      <!-- DASHBOARD STATS -->
+      <div class="stats-grid animate-entrance">
+        <div class="stat-card glass-card">
+          <div class="stat-label">TOTAL DOCUMENT</div>
+          <div class="stat-value" id="totalDocs">0</div>
+          <div class="stat-note">FILES IN SUPABASE STORAGE</div>
+        </div>
+
+        <div class="stat-card glass-card">
+          <div class="stat-label">SYSTEM STATUS</div>
+          <div class="stat-value" id="systemStatus" style="font-size:20px; color:var(--accent-gold);">ONLINE</div>
+          <div class="stat-note">CONNECTED TO SUPABASE</div>
+        </div>
+      </div>
+
+      <!-- DOCUMENT MANAGEMENT SECTION -->
+      <div class="glass-card animate-entrance" id="documents">
+        <h3 style="margin-bottom:14px; font-size:16px;">Document Management (Supabase Storage)</h3>
+        
+        <div style="background:rgba(2,44,34,0.3); padding:14px; border-radius:12px; border:1px solid var(--glass-border); margin-bottom: 12px;">
+          <h4 style="font-size:13px; margin-bottom:10px; color:var(--accent-gold);">Document List</h4>
+          <select id="docs" size="6" aria-label="Select document" style="margin-bottom:12px;"></select>
+          <button type="button" onclick="openSelectedDocument()" style="width:100%;">📄 Open / Download File</button>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button onclick="loadDocs()" style="flex:1;">Refresh Storage Files</button>
+        </div>
+        <div id="status" style="margin-top:10px; font-size:12px; color:var(--accent-gold);"></div>
+      </div>
+
+      <!-- AIRPORT SEARCH SECTION -->
+      <section id="airport-search" class="glass-card animate-entrance">
+        <h3 style="margin-bottom:6px; font-size:16px;">Airport Search (PostgreSQL Database)</h3>
+        <p style="color:var(--text-muted); font-size:12px; margin-bottom:14px;">Search airport information directly from Supabase Database.</p>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+          <input type="text" id="airportSearchInput" placeholder="Search airport name, IATA, ICAO..." style="flex:1;">
+          <button type="button" onclick="runAirportSearch()">Search Database</button>
+        </div>
+
+        <div id="airportSearchStatus" style="margin-bottom:12px; color:var(--text-muted); font-size:12px;">
+          Enter keyword to query database.
+        </div>
+
+        <div id="airportSearchResults"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // =========================================================
+    // 1. SUPABASE API CONFIGURATION (DITETAPKAN SECARA AUTOMATIK)
+    // =========================================================
+    const SUPABASE_URL = 'https://kfatqszqbvocybgdqtps.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmYXRxc3pxYnZvY3liZ2RxdHBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0MjIwNzQsImV4cCI6MjEwODk5ODA3NH0.EPBWQ_j6qkUsonY0IgaPhIgAi5FslNf5MlmD0lMBjDI';
+
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // =========================================================
+    // 2. AUTHENTICATION LOGIC (SUPABASE AUTH)
+    // =========================================================
+    async function checkExistingSession() {
+      const { data: { session } } = await db.auth.getSession();
+      if (session) {
+        document.getElementById('loginOverlay').classList.add('hidden-login');
+        initPortalData();
+      }
+    }
+
+    async function processLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPass').value.trim();
+      const errBox = document.getElementById('loginErrorMsg');
+
+      if (!email || !password) {
+        errBox.textContent = "Sila isi Email dan Password.";
+        return;
+      }
+
+      errBox.style.color = "#fbbf24";
+      errBox.textContent = "Sedang mengesahkan dengan Supabase...";
+
+      const { data, error } = await db.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        errBox.style.color = "#f87171";
+        errBox.textContent = error.message;
+      } else {
+        errBox.textContent = "";
+        document.getElementById('loginOverlay').classList.add('hidden-login');
+        initPortalData();
+      }
+    }
+
+    async function processLogout() {
+      await db.auth.signOut();
+      document.getElementById('loginOverlay').classList.remove('hidden-login');
+    }
+
+    function initPortalData() {
+      loadDocs();
+    }
+
+    // =========================================================
+    // 3. STORAGE LOGIC (LOAD FILES FROM BUCKET 'documents')
+    // =========================================================
+    async function loadDocs() {
+      const status = document.getElementById('status');
+      status.textContent = "Sedang memuatkan fail dari Supabase Storage...";
+
+      const { data: files, error } = await db.storage.from('documents').list();
+
+      if (error) {
+        status.textContent = "Gagal memuatkan fail: " + error.message;
+        return;
+      }
+
+      const select = document.getElementById('docs');
+      select.replaceChildren();
+
+      const validFiles = (files || []).filter(f => f.name !== '.emptyFolderPlaceholder');
+      document.getElementById('totalDocs').textContent = validFiles.length;
+
+      validFiles.forEach(file => {
+        const option = document.createElement('option');
+        option.value = file.name;
+        option.textContent = file.name + ' (' + (file.metadata?.size ? Math.round(file.metadata.size/1024) + ' KB' : 'File') + ')';
+        select.appendChild(option);
+      });
+
+      status.textContent = "Fail berjaya dimuatkan.";
+    }
+
+    function openSelectedDocument() {
+      const select = document.getElementById('docs');
+      const fileName = select.value;
+
+      if (!fileName) {
+        alert("Sila pilih fail daripada senarai.");
+        return;
+      }
+
+      const { data } = db.storage.from('documents').getPublicUrl(fileName);
+      window.open(data.publicUrl, '_blank');
+    }
+
+    // =========================================================
+    // 4. DATABASE SEARCH LOGIC (POSTGRESQL TABLE 'airports')
+    // =========================================================
+    async function runAirportSearch() {
+      const input = document.getElementById('airportSearchInput');
+      const status = document.getElementById('airportSearchStatus');
+      const resultsBox = document.getElementById('airportSearchResults');
+      const keyword = input.value.trim();
+
+      status.textContent = "Searching Supabase database...";
+      resultsBox.innerHTML = "";
+
+      let query = db.from('airports').select('*');
+
+      if (keyword) {
+        query = query.or(`airport_name.ilike.%${keyword}%,iata_code.ilike.%${keyword}%,icao_code.ilike.%${keyword}%,country.ilike.%${keyword}%`);
+      }
+
+      const { data: airports, error } = await query;
+
+      if (error) {
+        status.textContent = "Gagal membuat carian: " + error.message;
+        return;
+      }
+
+      status.textContent = (airports ? airports.length : 0) + " rekod lapangan terbang ditemui.";
+
+      if (!airports || airports.length === 0) {
+        resultsBox.textContent = "Tiada rekod padan ditemui.";
+        return;
+      }
+
+      resultsBox.innerHTML = airports.map(airport => `
+        <div style="margin-bottom:12px; padding:16px; border:1px solid var(--glass-border); border-radius:12px; background:rgba(6,78,59,0.2);" class="animate-entrance">
+          <h4 style="margin:0 0 10px; color:var(--accent-gold);">${airport.airport_name || 'Unnamed Airport'}</h4>
+          <p style="margin:4px 0; font-size:12px; color:var(--text-muted);"><strong style="color:var(--text-main);">IATA / ICAO:</strong> ${airport.iata_code || '-'} / ${airport.icao_code || '-'}</p>
+          <p style="margin:4px 0; font-size:12px; color:var(--text-muted);"><strong style="color:var(--text-main);">Country:</strong> ${airport.country || '-'}</p>
+          <p style="margin:4px 0; font-size:12px; color:var(--text-muted);"><strong style="color:var(--text-main);">Runway Length:</strong> ${airport.runway_length_m || '-'} m</p>
+          <p style="margin:4px 0; font-size:12px; color:var(--text-muted);"><strong style="color:var(--text-main);">ARFF Category:</strong> ${airport.arff_category || '-'}</p>
+        </div>
+      `).join('');
+    }
+
+    function portalNavigate(section, button) {
+      document.querySelectorAll('.portal-nav-btn').forEach(btn => btn.classList.remove('active'));
+      if (button) button.classList.add('active');
+
+      if (section === 'dashboard') window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (section === 'documents') document.getElementById('documents').scrollIntoView({ behavior: 'smooth' });
+      if (section === 'airport-search') document.getElementById('airport-search').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    checkExistingSession();
+  </script>
+</body>
+</html>
